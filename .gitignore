@@ -1,0 +1,50 @@
+# User-supplied game/firmware material
+*.app
+*.bin
+*.dat
+*.dll
+*.exe
+*.img
+*.rom
+*.sav
+*.SAV
+*.idb
+*.i64
+*.ghidra
+
+# Extracted assets and captures
+assets/
+firmware/
+game_files/
+roms/
+saves/
+outputs/
+screenshots/
+videos/
+*.bmp
+*.gif
+*.jpeg
+*.jpg
+*.mp4
+*.png
+*.raw
+*.dump
+*.log
+
+# Python/editor state
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+.env.*
+.idea/
+.vscode/
+
+# Archives may accidentally nest restricted material
+*.7z
+*.rar
+*.tar
+*.tar.gz
+*.zip

@@ -1,0 +1,11 @@
+# Categories intentionally excluded from the public source release
+game executable and binary blobs (*.app, *.bin, *.exe)
+game resource archives (*.dat)
+game saves (*.sav, *.SAV)
+N-Gage/Symbian firmware, ROM images, and system libraries (*.rom, *.img, *.dll)
+IDA/Ghidra projects and other analysis databases (*.idb, *.i64, *.ghidra)
+extracted sprites, textures, fonts, audio, music, and video
+screenshots, framebuffer/memory dumps, logs, caches, and generated outputs
+private full Git history and historical reports requiring individual review
+symbol-name exports derived from third-party IDA databases
+archive manifests containing the proprietary game's complete internal filename list
