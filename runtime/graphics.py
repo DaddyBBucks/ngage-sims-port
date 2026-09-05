@@ -22,18 +22,31 @@ the emulated screen actually looks like at a given instruction count.
 
 import struct
 
-DATAADDRESS_THUNK_VA = 0x4962c4   # FBSCLI:0x11  CFbsBitmap::DataAddress()
-TBITMAPUTIL_CTOR_VA = 0x4962f4    # FBSCLI:0x89  TBitmapUtil::TBitmapUtil()
-TBITMAPUTIL_BEGIN_VA = 0x4962a4   # FBSCLI:0x6   TBitmapUtil::Begin()
-TBITMAPUTIL_END_VA = 0x496294     # FBSCLI:0x19  TBitmapUtil::End()
+DATAADDRESS_THUNK_VA = 0x4962c4
+TBITMAPUTIL_CTOR_VA = 0x4962f4
+TBITMAPUTIL_BEGIN_VA = 0x4962a4
+TBITMAPUTIL_END_VA = 0x496294
 
 SCREEN_WIDTH = 176
 SCREEN_HEIGHT = 208
 BPP = 2
-DATAADDRESS_SIZE = SCREEN_WIDTH * SCREEN_HEIGHT * BPP  # 0x11E00
+DATAADDRESS_SIZE = SCREEN_WIDTH * SCREEN_HEIGHT * BPP
 
-# The live N-Gage framebuffer's runtime address, confirmed by trace.
-FRAMEBUFFER_WATCH_LO = 0x20012078
+
+def set_screen_width(width):
+    """v358 experimental viewport width override.
+
+    The canonical path never calls this. The host-side buffer size is updated;
+    guest-side constants are handled by runtime/widescreen.py.
+    """
+    global SCREEN_WIDTH, DATAADDRESS_SIZE, FRAMEBUFFER_WATCH_HI
+    SCREEN_WIDTH = int(width)
+    DATAADDRESS_SIZE = SCREEN_WIDTH * SCREEN_HEIGHT * BPP
+    FRAMEBUFFER_WATCH_HI = FRAMEBUFFER_WATCH_LO + DATAADDRESS_SIZE
+    return DATAADDRESS_SIZE
+
+
+FRAMEBUFFER_WATCH_LO = 0x20012038
 FRAMEBUFFER_WATCH_HI = FRAMEBUFFER_WATCH_LO + SCREEN_WIDTH * SCREEN_HEIGHT * BPP
 
 
@@ -60,8 +73,8 @@ def handle_tbitmaputil_ctor(ctx, uc):
     this_ptr = uc.reg_read(UC_ARM_REG_R0)
     bitmap_ptr = uc.reg_read(UC_ARM_REG_R1)
     if this_ptr != 0:
-        uc.mem_write(this_ptr, struct.pack("<I", bitmap_ptr))     # iFbsBitmap
-        uc.mem_write(this_ptr + 4, struct.pack("<I", 0))          # iWordPos
+        uc.mem_write(this_ptr, struct.pack("<I", bitmap_ptr))
+        uc.mem_write(this_ptr + 4, struct.pack("<I", 0))
         ctx.tbitmaputil_bitmap_of[this_ptr] = bitmap_ptr
 
 
@@ -89,28 +102,30 @@ def handle_tbitmaputil_begin(ctx, uc):
         if offset < DATAADDRESS_SIZE:
             word_pos = buf + offset
     if word_pos == 0 and buf != 0:
-        word_pos = buf  # clamp out-of-range positions into the buffer
+        word_pos = buf
     if this_ptr != 0:
         uc.mem_write(this_ptr + 4, struct.pack("<I", word_pos))
 
 
 def handle_tbitmaputil_end(ctx, uc):
-    pass  # no persistent state to flush in our fake-buffer model
+    pass
 
-
-# --- Framebuffer snapshot / timeline -----------------------------------
 
 class FramebufferWatcher:
-    """Tracks the live framebuffer region and can take point-in-time
-    snapshots for later rendering (see tools/render_snapshot.py)."""
+    """Tracks the live framebuffer region and can take point-in-time snapshots."""
 
-    def __init__(self):
-        self.shadow = bytearray(FRAMEBUFFER_WATCH_HI - FRAMEBUFFER_WATCH_LO)
+    def __init__(self, base=None):
+        self.base = FRAMEBUFFER_WATCH_LO if base is None else base
+        self.span = FRAMEBUFFER_WATCH_HI - FRAMEBUFFER_WATCH_LO
+        self.shadow = bytearray(self.span)
+
+    def rebase(self, base):
+        self.base = base
 
     def on_write(self, address, size, value):
-        if not (FRAMEBUFFER_WATCH_LO <= address < FRAMEBUFFER_WATCH_HI):
+        if not (self.base <= address < self.base + self.span):
             return
-        off = address - FRAMEBUFFER_WATCH_LO
+        off = address - self.base
         try:
             self.shadow[off:off + size] = value.to_bytes(size, "little")
         except OverflowError:
@@ -124,7 +139,7 @@ class FramebufferWatcher:
 
 
 def render_snapshot_to_png(raw_bytes, out_path, scale=3):
-    """Render a raw RGB565 framebuffer snapshot to a PNG. Requires Pillow."""
+    """Render a raw framebuffer snapshot to PNG. Requires Pillow."""
     from PIL import Image
     img = Image.new("RGB", (SCREEN_WIDTH, SCREEN_HEIGHT))
     px = img.load()
