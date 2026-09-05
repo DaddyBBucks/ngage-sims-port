@@ -1,3 +1,5 @@
-unicorn==2.1.4
-capstone>=5.0,<6
-Pillow>=10,<13
+unicorn>=2.0.0
+capstone>=5.0.0
+pygame>=2.1.0
+numpy>=1.20
+Pillow>=9.0.0
