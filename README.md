@@ -9,6 +9,27 @@ instrumentation, native rendering experiments, and research tools. It does
 **not** contain the game, game assets, firmware, system libraries, save files,
 extracted resources, screenshots, or links/instructions for obtaining them.
 
+## Where are we now?
+
+The project has progressed from an ARM/Symbian compatibility harness to a
+hybrid runtime in which original ARM game logic remains the behavior oracle
+while verified graphics work is increasingly performed natively on the host.
+
+The currently loaded region's **entire background/world map can already be
+reconstructed from runtime data** (measured examples include 640x832 outdoor
+and 640x512 interior regions). The principal graphics blocker is now much more
+specific: producing the complete sprite/entity view directly from region-space
+entity state rather than relying on the N-Gage viewport's OAM output.
+
+**Current milestone: full-region sprite parity.** The last v383 measurement
+matched the main/simple producer path; a layered-record parser gate was then
+identified as incorrect and has an evidence-based source correction. A fresh
+parity run is still required before complete sprite parity is claimed.
+
+- **How did the project get here?** Read [`RESEARCH_JOURNEY.md`](RESEARCH_JOURNEY.md).
+- **What comes next?** Read [`ROADMAP.md`](ROADMAP.md).
+- **Need the compact measurements/addresses?** Read [`RESEARCH_STATUS.md`](RESEARCH_STATUS.md).
+
 ## Research progress since the initial public source release
 
 The initial public commit (`09f76f0`, 2026-08-26) represented an earlier
@@ -31,9 +52,6 @@ The important findings include:
   viewport limit;
 - an active-save region tool can reconstruct the full currently loaded
   background/world map locally.
-
-See `RESEARCH_STATUS.md` for measured details, addresses, current limitations,
-and the next graphics milestone.
 
 ## Current public-source scope
 
@@ -68,7 +86,8 @@ material outside Git. See `ASSETS_REQUIRED.md`.
 - `runtime/` — compatibility services and runtime components
 - `patches.py` — named compatibility/experimental patches
 - `tools/` — public research utilities
-- `research_v385/` — curated source-only v378-v385 research snapshot
+- `RESEARCH_JOURNEY.md` — chronological explanation of how the research reached v385
+- `ROADMAP.md` — current milestone, acceptance gates and path toward Android
 - `RESEARCH_STATUS.md` — concise evidence/status ledger through v385
 - `PUBLIC_RELEASE_AUDIT.md` — license-clean and identity-clean release checks
 - `LEGAL.md` / `ASSETS_REQUIRED.md` — contribution and local-input boundaries
