@@ -1,65 +1,89 @@
 # N-Gage Sims Compatibility Research
 
 An independent, fan-made interoperability and reverse-engineering research
-project for studying the ARM/Symbian behavior of the N-Gage edition of
-*The Sims: Bustin' Out*.
+project studying the ARM/Symbian behavior of the N-Gage edition of *The Sims:
+Bustin' Out*.
 
-This repository contains original Python compatibility-layer, instrumentation,
-and research-tool source code. It does **not** contain the game, game assets,
-N-Gage firmware, Symbian system libraries, save files, extracted resources, or
-instructions/links for obtaining them.
+This repository contains original Python compatibility-layer code,
+instrumentation, native rendering experiments, and research tools. It does
+**not** contain the game, game assets, firmware, system libraries, save files,
+extracted resources, screenshots, or links/instructions for obtaining them.
 
-This project is not affiliated with, endorsed by, or sponsored by Electronic
-Arts, Nokia, Ideaworks, or any other rights holder. Product names and
-trademarks belong to their respective owners.
+## Research progress since the initial public source release
+
+The initial public commit (`09f76f0`, 2026-08-26) represented an earlier
+compatibility harness. Research has since advanced through the v385 milestone.
+The important findings include:
+
+- normal gameplay is reached in the working research runtime while original ARM
+  game logic remains the behavior oracle;
+- several previously required compatibility patches were measured and retired
+  after their underlying platform behavior was reproduced;
+- the resource archive layout was documented and user-supplied archives can be
+  inspected locally without distributing their contents;
+- tile/layer composition and canonical sprite pixel generation have host-side
+  native implementations with ARM-path verification modes;
+- a validated 208x208 viewport path extends the original 176x208 presentation;
+- the currently loaded world region can be reconstructed directly from runtime
+  map/metatile data rather than by scaling the N-Gage framebuffer;
+- region-space entity coordinates and the OAM producer pipeline have been
+  traced, enabling work toward rendering entities beyond the original OAM
+  viewport limit;
+- an active-save region tool can reconstruct the full currently loaded
+  background/world map locally.
+
+See `RESEARCH_STATUS.md` for measured details, addresses, current limitations,
+and the next graphics milestone.
+
+## Current public-source scope
+
+The repository is intended for interoperability research and peer review, not
+as a finished Android port or a generic N-Gage emulator. Newer v378-v385
+research tools and region/sprite components are being published incrementally
+so other developers can inspect and reproduce the findings without any game
+payload being distributed.
+
+The full-region sprite path is **not yet verified complete**. The v383
+layered-sprite parser has an evidence-based source correction, but a fresh
+end-to-end parity run is still required before complete full-region sprite
+rendering is claimed.
+
+Audio work is not part of this milestone.
 
 ## Requirements
 
-- Python 3.11+
-- Packages listed in `requirements.txt`
-- A game binary and resource archive obtained by the user from a lawful copy
-
-Install dependencies:
+Python dependencies are listed in `requirements.txt`. No dependency source is
+vendored.
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-Run with local files kept outside the repository:
-
-```bash
-python run.py \
-  --binary-file /path/to/local/game-binary \
-  --archive-file /path/to/local/thesims.dat \
-  --save-file /path/to/disposable/THESIMS.SAV \
-  --research
-```
-
-The save argument is optional. Always use a disposable copy because the game
-may open it for writing. If the required binary is absent, the program exits
-with an explanatory error.
+Runtime experiments require user-supplied local game inputs. Keep all such
+material outside Git. See `ASSETS_REQUIRED.md`.
 
 ## Repository layout
 
-- `run.py`: command-line entry point and Unicorn orchestration
-- `runtime/`: compatibility services, input, graphics, archive I/O, and traces
-- `patches.py`: named experimental compatibility patches
-- `research_v209.py`: observation probes and reproducible input sequences
-- `tools/`: archive-research utilities
-- `thunk_map.json`: independently produced import address/ordinal mapping
+- `run.py` — public compatibility/research harness
+- `runtime/` — compatibility services and runtime components
+- `patches.py` — named compatibility/experimental patches
+- `tools/` — public research utilities
+- `research_v385/` — curated source-only v378-v385 research snapshot
+- `RESEARCH_STATUS.md` — concise evidence/status ledger through v385
+- `PUBLIC_RELEASE_AUDIT.md` — license-clean and identity-clean release checks
+- `LEGAL.md` / `ASSETS_REQUIRED.md` — contribution and local-input boundaries
 
-## Current research status
+## Research philosophy
 
-With locally supplied game data, the harness reaches the name-entry module and
-renders its alphabet, digits, panels, and Done control. The current narrow
-investigation is why the title raster reaches the live framebuffer's upper rows
-but is absent from a later displayed frame: overwrite versus invisible
-mask/palette output.
+The project keeps the original ARM execution path as an oracle while replacing
+well-understood high-frequency subsystems one at a time. A host-side
+implementation is considered trustworthy only after it is compared against the
+original path or otherwise backed by reproducible runtime evidence.
 
-## Legal and contribution notes
+## Legal / contribution boundary
 
-Read `LEGAL.md`, `ASSETS_REQUIRED.md`, and `THIRD_PARTY_NOTICES.md` before use
-or contribution. Do not submit ROMs, firmware, DLLs, game binaries, saves,
-screenshots, extracted assets, or derived databases. The MIT license applies
-only to the original source and documentation in this repository; it grants no
-rights to third-party games, assets, firmware, trademarks, or libraries.
+Do not submit game binaries, ROMs, firmware, DLLs, saves, screenshots,
+extracted resources, derived cache payloads, or links to them. The MIT license
+covers only original project code and documentation. Read `LEGAL.md`,
+`ASSETS_REQUIRED.md`, `THIRD_PARTY_NOTICES.md`, and `PRIVACY.md` before
+contributing.
