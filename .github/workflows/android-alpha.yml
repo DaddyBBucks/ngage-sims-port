@@ -20,12 +20,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
         with:
-          python-version: '3.13'
+          gradle-version: '8.11.1'
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -53,9 +52,7 @@ jobs:
 
       - name: Build debug APK
         working-directory: android
-        run: |
-          chmod +x gradlew
-          ./gradlew --no-daemon :app:assembleDebug
+        run: gradle --no-daemon :app:assembleDebug
 
       - name: Upload alpha APK
         uses: actions/upload-artifact@v4

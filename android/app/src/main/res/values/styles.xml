@@ -1,0 +1,1 @@
+<resources><style name="Theme.NGageSimsDev" parent="android:style/Theme.Material.NoActionBar"><item name="android:windowFullscreen">true</item></style></resources>
