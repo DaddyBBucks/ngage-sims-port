@@ -1,4 +1,4 @@
-# User-supplied game/firmware material
+# User-supplied game / firmware / platform material
 *.app
 *.bin
 *.dat
@@ -8,12 +8,18 @@
 *.rom
 *.sav
 *.SAV
+*.sis
+*.sisx
+*.rsc
+*.mbm
 *.idb
 *.i64
 *.ghidra
 
-# Extracted assets and captures
+# Extracted or derived third-party content
 assets/
+unpacked/
+records/
 firmware/
 game_files/
 roms/
@@ -21,6 +27,8 @@ saves/
 outputs/
 screenshots/
 videos/
+cache_lang/
+toc.bin
 *.bmp
 *.gif
 *.jpeg
@@ -30,6 +38,12 @@ videos/
 *.raw
 *.dump
 *.log
+
+# Local research output / private state
+baselines/
+*.result.txt
+*_result.txt
+crash*.txt
 
 # Python/editor state
 __pycache__/
